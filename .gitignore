@@ -1,0 +1,11 @@
+3des/
+.venv/
+FastAPI/
+conexion_mongo.py
+*.pdf
+proyecto_cmch/
+proyecto_contraloria.tar/
+proyecto_dashboard/
+web-python-dash.tar/
+salida_completa.txt
+in-23042025.csv
