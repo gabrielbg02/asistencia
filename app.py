@@ -45,7 +45,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return None
 
 
-# Conexión a MongoDB (ajusta tus credenciales)
+# Conexión a MongoDB 
 try:
     connect(
         db="asistencia",
@@ -95,7 +95,7 @@ async def login_page(request: Request):
     }
     return templates.TemplateResponse("login.html", {"request": request}, headers=headers)
 
-# Ruta principal (formulario HTML)
+
 @app.get("/registro", response_class=HTMLResponse)
 async def mostrar_formulario(request: Request):
     token = request.cookies.get("sessionid")
@@ -141,7 +141,7 @@ async def upload_csv(request: Request, file: UploadFile = File(...)):
     
     try:
         # Leer el CSV con Pandas
-        df = pd.read_csv(file.file, encoding='latin1', usecols=['sJobNo', 'Date', 'Time']).head(5)
+        df = pd.read_csv(file.file, encoding='latin1', usecols=['sJobNo', 'Date', 'Time'])
         df['fecha_completa'] = df['Date'] + " " + df['Time']
         
         # Convertir a lista de diccionarios
