@@ -116,6 +116,7 @@ async def mostrar_formulario(request: Request):
 async def mostrar_formulario(request: Request):
     datos = Asistencia.objects().order_by('-id.generation_time')
     print(f"Cantidad de datos recuperados: {len(datos)}") 
+    total_registros = Asistencia.objects.count()
     token = request.cookies.get("sessionid")
     if not token:
         return RedirectResponse(url="/", status_code=303)
@@ -127,7 +128,7 @@ async def mostrar_formulario(request: Request):
         
     except JWTError:
         return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse("dashboard.html", {"request": request , "user": username, "datos" : datos})
+    return templates.TemplateResponse("dashboard.html", {"request": request , "user": username, "datos" : datos , "total_registros": total_registros})
 
 @app.get("/logout")
 async def logout(request: Request):

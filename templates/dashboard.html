@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             background-color: #f8f9fa;
@@ -70,7 +75,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <h5 class="card-title"><i class="fas fa-chart-bar me-2"></i>Resumen de Asistencias</h5>
-                        <p class="card-text">Total registros: <span class="fw-bold">125</span></p>
+                        <h6 class="card-text d-inline">Total registros: </h6>
+                        <p class="card-text d-inline display-7">{{ total_registros }}</p>
                     </div>
                     <div class="col-md-6 text-end">
                         <button class="btn btn-upload" onclick="uploadCSV()">
@@ -126,12 +132,6 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Inicializar DataTable con configuración mejorada
         $(document).ready(function() {
@@ -146,17 +146,13 @@
                 // Añade estas configuraciones para asegurar la paginación
                 paging: true,
                 pagingType: "full_numbers",
-                initComplete: function() {
-                    console.log('DataTable inicializado correctamente');
-                    // Verifica cuántos registros se cargaron
-                    console.log('Registros totales:', this.api().data().length);
-                }
+                order: [[1, 'asc']],
             });
         });
 
         // Función para mostrar detalles (versión mejorada)
         function showDetails(cedula) {
-            console.log('Mostrando detalles para cédula:', cedula);
+            
             
             // Aquí deberías hacer una llamada AJAX a tu backend para obtener los datos reales
             // Este es solo un ejemplo con datos estáticos
@@ -216,7 +212,7 @@
         function uploadCSV() {
             window.location.href = '/registro';
         }
-
+        
         // Manejo de errores
         $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
             console.error("Error en la solicitud AJAX:", thrownError);
