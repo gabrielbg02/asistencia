@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard de Asistencias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Questrial', sans-serif;
+        }
+        .navbar {
+            background-color: #083F75;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-details {
+            background-color: #083F75;
+            color: white;
+        }
+        .btn-details:hover {
+            background-color: #0a4f8f;
+            color: white;
+        }
+        .btn-upload {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-upload:hover {
+            background-color: #218838;
+            color: white;
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-calendar-check me-2"></i>Control de Asistencias
+            </a>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle me-1"></i> {{ user }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item" href="#" onclick="uploadCSV()"><i class="fas fa-file-upload me-2"></i>Agregar Registro CSV</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+        <!-- Tarjeta de resumen -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="card-title"><i class="fas fa-chart-bar me-2"></i>Resumen de Asistencias</h5>
+                        <p class="card-text">Total registros: <span class="fw-bold">125</span></p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-upload" onclick="uploadCSV()">
+                            <i class="fas fa-file-upload me-2"></i>Subir CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de asistencias -->
+        <div class="table-container">
+            <table id="asistenciasTable" class="table table-striped table-hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Cédula</th>
+                        <th>Fecha</th>
+                        <th>Descripcion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in datos %}
+                    <tr id="row-{{ dato.id }}">
+                        <td>{{ dato.cedula }}</td>
+                        <td>{{ dato.fecha }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="showDetails('{{ dato.cedula }}')">
+                                <i class="fa-regular fa-folder-open"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para detalles -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles completos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBodyContent">
+                    <!-- Contenido dinámico -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Inicializar DataTable con configuración mejorada
+        $(document).ready(function() {
+            $('#asistenciasTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+                },
+                pageLength: 50,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                responsive: true,
+                dom: '<"top"lf>rt<"bottom"ip><"clear">',
+                // Añade estas configuraciones para asegurar la paginación
+                paging: true,
+                pagingType: "full_numbers",
+                initComplete: function() {
+                    console.log('DataTable inicializado correctamente');
+                    // Verifica cuántos registros se cargaron
+                    console.log('Registros totales:', this.api().data().length);
+                }
+            });
+        });
+
+        // Función para mostrar detalles (versión mejorada)
+        function showDetails(cedula) {
+            console.log('Mostrando detalles para cédula:', cedula);
+            
+            // Aquí deberías hacer una llamada AJAX a tu backend para obtener los datos reales
+            // Este es solo un ejemplo con datos estáticos
+            const details = {
+                '123456789': {
+                    nombre: 'Juan Pérez',
+                    departamento: 'Ventas',
+                    cargo: 'Representante',
+                    fecha: '2023-06-15 08:30:00',
+                    tipo: 'Entrada'
+                },
+                '987654321': {
+                    nombre: 'María Gómez',
+                    departamento: 'TI',
+                    cargo: 'Desarrolladora',
+                    fecha: '2023-06-15 09:15:00',
+                    tipo: 'Entrada'
+                },
+                '456789123': {
+                    nombre: 'Carlos Rodríguez',
+                    departamento: 'RH',
+                    cargo: 'Reclutador',
+                    fecha: '2023-06-15 10:00:00',
+                    tipo: 'Entrada'
+                }
+            };
+
+            const person = details[cedula] || {
+                nombre: 'No encontrado',
+                departamento: 'N/A',
+                cargo: 'N/A',
+                fecha: 'N/A',
+                tipo: 'N/A'
+            };
+
+            const modalContent = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nombre:</strong> ${person.nombre}</p>
+                        <p><strong>Cédula:</strong> ${cedula}</p>
+                        <p><strong>Departamento:</strong> ${person.departamento}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Cargo:</strong> ${person.cargo}</p>
+                        <p><strong>Fecha y hora:</strong> ${person.fecha}</p>
+                        <p><strong>Tipo de registro:</strong> ${person.tipo}</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalBodyContent').innerHTML = modalContent;
+            var modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            modal.show();
+        }
+
+        // Función para subir CSV
+        function uploadCSV() {
+            window.location.href = '/registro';
+        }
+
+        // Manejo de errores
+        $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
+            console.error("Error en la solicitud AJAX:", thrownError);
+        });
+    </script>
+</body>
+</html>

@@ -10,6 +10,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette.middleware.sessions import SessionMiddleware
 from datetime import datetime, timedelta, tzinfo, timezone
 from passlib.context import CryptContext
+from bson.objectid import ObjectId
 
 import os
 import controllers
@@ -111,6 +112,22 @@ async def mostrar_formulario(request: Request):
         return RedirectResponse(url="/", status_code=303)
     return templates.TemplateResponse("asistencia.html", {"request": request , "user": username})
 
+@app.get("/dashboard", response_class=HTMLResponse)
+async def mostrar_formulario(request: Request):
+    datos = Asistencia.objects().order_by('-id.generation_time')
+    print(f"Cantidad de datos recuperados: {len(datos)}") 
+    token = request.cookies.get("sessionid")
+    if not token:
+        return RedirectResponse(url="/", status_code=303)
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+    except JWTError:
+        return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse("dashboard.html", {"request": request , "user": username, "datos" : datos})
 
 @app.get("/logout")
 async def logout(request: Request):

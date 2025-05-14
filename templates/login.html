@@ -41,7 +41,7 @@
             if (response.ok) {
                 localStorage.setItem("access_token", result.access_token);
             //event.preventDefault(); // Evita el envío tradicional del formulario
-            window.location.href = "/registro";
+            window.location.href = "/dashboard";
             } else {
                 document.getElementById("error-message").textContent = "Credenciales inválidas";
             }
